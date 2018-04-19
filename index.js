@@ -25,8 +25,7 @@ const modules = {
     domain: require('domain'),
     mqtt: require('mqtt'),
     watch: require('watch'),
-    'node-schedule': require('node-schedule'),
-    suncalc: require('suncalc')
+    'node-schedule': require('node-schedule')
 };
 
 const domain = modules.domain;
@@ -35,7 +34,6 @@ const fs = modules.fs;
 const path = modules.path;
 const watch = modules.watch;
 const scheduler = modules['node-schedule'];
-const suncalc = modules.suncalc;
 
 const sandboxModules = [];
 const status = {};
@@ -43,78 +41,6 @@ const scripts = {};
 const subscriptions = [];
 
 const _global = {};
-
-// Sun scheduling
-
-const sunEvents = [];
-let sunTimes = [{}, /* today */ {}, /* tomorrow */ {}];
-
-function calculateSunTimes() {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0, 0);
-    const yesterday = new Date(today.getTime() - 86400000); // (24 * 60 * 60 * 1000));
-    const tomorrow = new Date(today.getTime() + 86400000); // (24 * 60 * 60 * 1000));
-    sunTimes = [
-        suncalc.getTimes(yesterday, config.latitude, config.longitude),
-        suncalc.getTimes(today, config.latitude, config.longitude),
-        suncalc.getTimes(tomorrow, config.latitude, config.longitude)
-    ];
-}
-
-calculateSunTimes();
-
-scheduler.scheduleJob('0 0 * * *', () => {
-    // Re-calculate every day
-    calculateSunTimes();
-    // Schedule events for this day
-    sunEvents.forEach(event => {
-        sunScheduleEvent(event);
-    });
-    log.info('re-scheduled', sunEvents.length, 'sun events');
-});
-
-function sunScheduleEvent(obj, shift) {
-    // Shift = -1 -> yesterday
-    // shift = 0 -> today
-    // shift = 1 -> tomorrow
-    let event = sunTimes[1 + (shift || 0)][obj.pattern];
-    const now = new Date();
-
-    if (event.toString() !== 'Invalid Date') {
-        // Event will occur today
-
-        if (obj.options.shift) {
-            event = new Date(event.getTime() + ((parseFloat(obj.options.shift) || 0) * 1000));
-        }
-
-        if ((event.getDate() !== now.getDate()) && (typeof shift === 'undefined')) {
-            // Event shifted to previous or next day
-            sunScheduleEvent(obj, (event < now) ? 1 : -1);
-            return;
-        }
-
-        if ((now.getTime() - event.getTime()) < 1000) {
-            // Event is less than 1s in the past or occurs later this day
-
-            if (obj.options.random) {
-                event = new Date(
-                    event.getTime() +
-                    (Math.floor((parseFloat(obj.options.random) || 0) * Math.random()) * 1000)
-                );
-            }
-
-            if ((event.getTime() - now.getTime()) < 1000) {
-                // Event is less than 1s in the future or already in the past
-                // (options.random may have shifted us further to the past)
-                // call the callback immediately!
-                obj.domain.bind(obj.callback)();
-            } else {
-                // Schedule the event!
-                scheduler.scheduleJob(event, obj.domain.bind(obj.callback));
-            }
-        }
-    }
-}
 
 // MQTT
 const mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/maintenance/online', payload: 'false', retain: true}});
@@ -466,7 +392,6 @@ function runScript(script, name) {
          *
          * // every Sunday at 2:30pm
          * schedule({hour: 14, minute: 30, dayOfWeek: 0}, callback);
-         * @see {@link sunSchedule} for scheduling based on sun position.
          */
         schedule: function Sandbox_schedule(pattern, /* optional */ options, callback) {
             if (arguments.length === 2) {
@@ -500,67 +425,6 @@ function runScript(script, name) {
             } else {
                 scheduler.scheduleJob(pattern, scriptDomain.bind(callback));
             }
-        },
-        /**
-         * Schedule a recurring event based on sun position
-         * @method sunSchedule
-         * @param {string|string[]} pattern - a suncalc event or an array of suncalc events. See {@link https://github.com/mourner/suncalc}
-         * @param {Object} [options]
-         * @param {number} [options.shift] - delay execution in seconds. Allowed Range: -86400...86400 (+/- 24h)
-         * @param {number} [options.random] - random delay execution in seconds.
-         * @param {function} callback - is called with no arguments
-         * @example // Call callback 15 minutes before sunrise
-         * sunSchedule('sunrise', {shift: -900}, callback);
-         *
-         * // Call callback random 0-15 minutes after sunset
-         * sunSchedule('sunset', {random: 900}, callback);
-         * @see {@link schedule} for time based scheduling.
-         */
-        sunSchedule: function Sandbox_sunSchedule(pattern, /* optional */ options, callback) {
-            if (arguments.length === 2) {
-                if (typeof arguments[1] !== 'function') {
-                    throw new TypeError('callback is not a function');
-                }
-                callback = arguments[1];
-                options = {};
-            } else if (arguments.length === 3) {
-                if (typeof arguments[2] !== 'function') {
-                    throw new TypeError('callback is not a function');
-                }
-                options = arguments[1] || {};
-                callback = arguments[2];
-            } else {
-                throw new Error('wrong number of arguments');
-            }
-
-            if ((typeof options.shift !== 'undefined') && (options.shift < -86400 || options.shift > 86400)) {
-                throw new Error('options.shift out of range');
-            }
-
-            if (typeof pattern === 'object' && pattern.length > 0) {
-                pattern = Array.prototype.slice.call(pattern);
-                pattern.forEach(pt => {
-                    Sandbox.sunSchedule(pt, options, callback);
-                });
-                return;
-            }
-
-            const event = sunTimes[0][pattern];
-            if (typeof event === 'undefined') {
-                throw new TypeError('unknown suncalc event ' + pattern);
-            }
-
-            const obj = {
-                pattern,
-                options,
-                callback,
-                context: Sandbox,
-                domain: scriptDomain
-            };
-
-            sunEvents.push(obj);
-
-            sunScheduleEvent(obj);
         },
         /**
          * Publish a MQTT message

@@ -15,8 +15,6 @@ const config = require('yargs')
         h: 'help',
         s: 'variable-prefix',
         t: 'disable-variables',
-        l: 'latitude',
-        m: 'longitude',
         n: 'name',
         u: 'url',
         v: 'verbosity',
@@ -25,8 +23,6 @@ const config = require('yargs')
     })
     .default({
         url: 'mqtt://127.0.0.1',
-        latitude: 48.7408,
-        longitude: 9.1778,
         name: 'logic',
         'variable-prefix': 'var',
         verbosity: 'info',
