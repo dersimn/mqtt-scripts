@@ -117,8 +117,8 @@ function sunScheduleEvent(obj, shift) {
 }
 
 // MQTT
-const mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/connected', payload: '0', retain: true}});
-mqtt.publish(config.name + '/connected', '2', {retain: true});
+const mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/maintenance/online', payload: 'false', retain: true}});
+mqtt.publish(config.name + '/maintenance/online', 'true', {retain: true});
 
 let firstConnect = true;
 let startTimeout;
