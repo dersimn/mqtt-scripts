@@ -28,7 +28,7 @@ const config = require('yargs')
         verbosity: 'info',
         'disable-variables': false,
         'disable-watch': false,
-        'dir': './scripts'
+        dir: './scripts'
     })
     .config('config')
     .version()
