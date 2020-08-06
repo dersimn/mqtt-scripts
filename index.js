@@ -8,8 +8,8 @@
 
 /* eslint node/no-deprecated-api: "warn" */
 
-const log = require('yalm');
 const pkg = require('./package.json');
+const log = require('yalm');
 const config = require('yargs')
     .env('MQTTSCRIPTS')
     .usage('Usage: $0 [options]')

@@ -75,7 +75,15 @@
     ],
     "rules": {
       "unicorn/catch-error-name": 1,
-      "prefer-spread": 1
+      "prefer-spread": 1,
+      "import/order": ["error", {
+        "pathGroups": [
+          {
+            "pattern": "./package.json",
+            "group": "builtin"
+          }
+        ]
+      }]
     }
   },
   "nyc": {
