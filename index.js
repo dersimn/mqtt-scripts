@@ -11,7 +11,7 @@
 const pkg = require('./package.json');
 const log = require('yalm');
 const config = require('yargs')
-    .env('MQTTSCRIPTS')
+    .env(pkg.name.replace(/[^a-zA-Z\d]/, '_').toUpperCase())
     .usage('Usage: $0 [options]')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
     .describe('name', 'instance name. used as mqtt client id and as prefix for connected topic')
