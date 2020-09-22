@@ -15,8 +15,6 @@ const config = require('yargs')
     .usage('Usage: $0 [options]')
     .describe('verbosity', 'possible values: "error", "warn", "info", "debug"')
     .describe('name', 'instance name. used as mqtt client id and as prefix for connected topic')
-    .describe('variable-prefix', 'topic prefix for $ substitution (shorthand for variables, see docs)')
-    .describe('disable-variables', 'disable variable feedback (see docs)')
     .describe('url', 'mqtt broker url. See https://github.com/mqttjs/MQTT.js#connect-using-a-url')
     .describe('help', 'show help')
     .describe('dir', 'directory to scan for .js and .coffee files. can be used multiple times.')
@@ -25,8 +23,6 @@ const config = require('yargs')
         c: 'config',
         d: 'dir',
         h: 'help',
-        s: 'variable-prefix',
-        t: 'disable-variables',
         n: 'name',
         u: 'url',
         v: 'verbosity',
@@ -36,9 +32,7 @@ const config = require('yargs')
     .default({
         url: 'mqtt://127.0.0.1',
         name: 'logic',
-        'variable-prefix': 'var',
         verbosity: 'info',
-        'disable-variables': false,
         'disable-watch': false,
         dir: './scripts'
     })
@@ -145,36 +139,20 @@ mqtt.on('message', (topic, payload, msg) => {
         state = {val: parseFloat(val)};
     }
 
-    const topicArr = topic.split('/');
-    let oldState;
-
-    if (topicArr[0] === config.variablePrefix && topicArr[1] === 'set' && !config.disableVariables) {
-        topicArr[1] = 'status';
-        topic = topicArr.join('/');
-        oldState = status[topic] || {};
-        const ts = (new Date()).getTime();
-
-        state.ts = ts;
-
-        state.lc = state.val === oldState.val ? oldState.lc : ts;
-        status[topic] = state;
-        mqtt.publish(topic, JSON.stringify(state), {retain: true});
-    } else {
-        /* istanbul ignore next */
-        if (!state) {
-            log.error('invalid state', topic, payload);
-            process.exit();
-        }
-        if (!state.ts) {
-            state.ts = new Date().getTime();
-        }
-        oldState = status[topic] || {};
-        if (oldState.val !== state.val) {
-            state.lc = state.ts;
-        }
-        status[topic] = state;
-        stateChange(topic, state, oldState, msg);
+    /* istanbul ignore next */
+    if (!state) {
+        log.error('invalid state', topic, payload);
+        process.exit();
     }
+    if (!state.ts) {
+        state.ts = new Date().getTime();
+    }
+    const oldState = status[topic] || {};
+    if (oldState.val !== state.val) {
+        state.lc = state.ts;
+    }
+    status[topic] = state;
+    stateChange(topic, state, oldState, msg);
 });
 
 function stateChange(topic, state, oldState, msg) {
@@ -376,7 +354,6 @@ function runScript(script, name) {
             }
 
             if (typeof topic === 'string') {
-                topic = topic.replace(/^\$/, config.variablePrefix + '/status/');
                 topic = topic.replace(/^([^/]+)\/\//, '$1/status/');
 
                 if (typeof options.condition === 'string') {
@@ -489,100 +466,14 @@ function runScript(script, name) {
             mqtt.publish(topic, payload, options);
         },
         /**
-         * Set a value on one or more topics
-         * @method setValue
-         * @param {(string|string[])} topic - topic or array of topics to set value on
-         * @param {mixed} val
-         */
-        setValue: function Sandbox_setValue(topic, val, publishUnchanged) {
-            if (typeof topic === 'object' && topic.length > 0) {
-                topic = Array.prototype.slice.call(topic);
-                topic.forEach(tp => {
-                    Sandbox.setValue(tp, val);
-                });
-                return;
-            }
-
-            let changed;
-
-            topic = topic.replace(/^\$/, config.variablePrefix + '//');
-
-            const tmp = topic.split('/');
-            if (tmp[0] === config.variablePrefix && !config.disableVariables) {
-                // Variable
-
-                tmp[1] = 'status';
-                topic = tmp.join('/');
-                const oldState = status[topic] || {};
-                const ts = (new Date()).getTime();
-                if (typeof val === 'object') {
-                    val.ts = ts;
-                } else {
-                    val = {val, ts};
-                }
-                if (val.val !== oldState.val) {
-                    val.lc = ts;
-                    changed = true;
-                }
-                status[topic] = val;
-                stateChange(topic, val, oldState, {});
-                if (changed || publishUnchanged) {
-                    Sandbox.publish(topic, val, {retain: true});
-                }
-            /* istanbul ignore next */ // TODO tests!
-            } else if (tmp[0] === config.variablePrefix && config.disableVariables) {
-                /* istanbul ignore next */
-                tmp[1] = 'status';
-                topic = tmp.join('/');
-                /* istanbul ignore next */
-                if (!status[topic] || (status[topic].val !== val)) {
-                    /* istanbul ignore next */
-                    tmp[1] = 'set';
-                    topic = tmp.join('/');
-                    Sandbox.publish(topic, val, {retain: false}); // TODO really retain false?!
-                }
-            } else {
-                topic = topic.replace(/^([^/]+)\/\/(.+)$/, '$1/set/$2');
-                Sandbox.publish(topic, val, {retain: false});
-            }
-        },
-        /**
          * @method getValue
          * @param {string} topic
          * @returns {mixed} the topics value
          */
         getValue: function Sandbox_getValue(topic) {
-            topic = topic.replace(/^\$/, config.variablePrefix + '/status/');
             topic = topic.replace(/^([^/]+)\/\/(.+)$/, '$1/status/$2');
             return status[topic] && status[topic].val;
-        },
-        /**
-         * Get a specific property of a topic
-         * @method getProp
-         * @param {string} topic
-         * @param {...string} [property] - the property to retrieve. May be repeated for nested properties. If omitted the whole topic object is returned.
-         * @returns {mixed} the topics properties value
-         * @example // returns the timestamp of a given topic
-         * getProp('hm//Bewegungsmelder Keller/MOTION', 'ts');
-         */
-        getProp: function Sandbox_getProp(topic /* , optional property, optional nested property, ... */) {
-            topic = topic.replace(/^([^/]+)\/\/(.+)$/, '$1/status/$2');
-            if (arguments.length > 1) {
-                let tmp = status[topic];
-                if (typeof tmp === 'undefined') {
-                    return;
-                }
-                for (let i = 1; i < arguments.length; i++) {
-                    if (typeof tmp[arguments[i]] === 'undefined') {
-                        return;
-                    }
-                    tmp = tmp[arguments[i]];
-                }
-                return tmp;
-            }
-            return status[topic];
         }
-
     };
 
     Sandbox.console = {
