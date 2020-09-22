@@ -153,10 +153,7 @@ mqtt.on('message', (topic, payload, msg) => {
         state.lc = state.ts;
     }
     status[topic] = state;
-    stateChange(topic, state, oldState, msg);
-});
 
-function stateChange(topic, state, oldState, msg) {
     subscriptions.forEach(subs => {
         const options = subs.options || {};
         let delay;
