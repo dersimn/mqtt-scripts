@@ -81,7 +81,7 @@ Docker Hub deploy:
 
     docker buildx create --name mybuilder
     docker buildx use mybuilder
-    docker buildx build --platform linux/amd64,linux/arm/v7 -t dersimn/mqtt-scripts -t dersimn/mqtt-scripts:1.x.0 --push .
+    docker buildx build --platform linux/amd64,linux/arm/v7 -t dersimn/mqtt-scripts -t dersimn/mqtt-scripts:2 -t dersimn/mqtt-scripts:2.x.x --push .
 
 
 # Command Line Options
