@@ -503,7 +503,7 @@ function loadScript(file) {
             if (file.match(/\.coffee$/)) {
                 if (!modules['coffee-compiler']) {
                     log.info('loading coffee-compiler');
-                    modules['coffee-compiler'] = require('coffee-compiler');
+                    modules['coffee-compiler'] = require('coffee-compiler2');
                 }
 
                 log.debug(file, 'transpiling');
