@@ -73,8 +73,8 @@ const subscriptions = [];
 const _global = {};
 
 // MQTT
-const mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/maintenance/online', payload: 'false', retain: true}});
-mqtt.publish(config.name + '/maintenance/online', 'true', {retain: true});
+const mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/online', payload: 'false', retain: true}});
+mqtt.publish(config.name + '/online', 'true', {retain: true});
 
 let firstConnect = true;
 let startTimeout;
