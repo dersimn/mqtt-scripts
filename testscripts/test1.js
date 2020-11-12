@@ -1,8 +1,8 @@
 log.info('test log');
 
-subscribe('test//incr', function (topic, val) {
+subscribe('test/status/incr', function (topic, val) {
     val += 1;
-    setValue(topic, val);
+    publish(topic, val);
 });
 
 subscribe('test/target', () => {
@@ -79,7 +79,7 @@ subscribe('test1', (topic, val) => {
 publish(['test1', 'test2'], {val: true});
 
 
-setValue('$testvar1', true);
-setValue('$testvar1', true);
-setValue('var/set/testvar2', true);
-setValue('var/set/testvar2', {val:true});
+publish('$testvar1', true);
+publish('$testvar1', true);
+publish('var/set/testvar2', true);
+publish('var/set/testvar2', {val:true});
