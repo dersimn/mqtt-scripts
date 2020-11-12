@@ -30,11 +30,11 @@ const config = require('yargs')
 
     })
     .default({
-        url: 'mqtt://127.0.0.1',
+        url: 'mqtt://host.docker.internal',
         name: 'logic',
         verbosity: 'info',
         'disable-watch': false,
-        dir: './scripts'
+        dir: '/scripts'
     })
     .config('config')
     .version()
