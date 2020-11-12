@@ -72,19 +72,16 @@ Configure via `MQTTSCRIPTS_` env variables when using Docker Compose.
 
 #### Build
 
-To build a Docker image yourself use the following workflow:
+Docker development build:
 
-```
-git clone https://github.com/hobbyquaker/mqtt-scripts.git
-cd mqtt-scripts
-docker build -t mqtt-scripts .
-```
+    docker build -t dersimn/mqtt-scripts .
+    docker run --rm -v "$(pwd)/testscripts":/scripts dersimn/mqtt-scripts -v debug
 
-To build for the Raspberry Pi, run:
+Docker Hub deploy:
 
-```
-docker build -t mqtt-scripts:armhf -f Dockerfile.armhf .
-```
+    docker buildx create --name mybuilder
+    docker buildx use mybuilder
+    docker buildx build --platform linux/amd64,linux/arm/v7 -t dersimn/mqtt-scripts -t dersimn/mqtt-scripts:1.x.0 --push .
 
 
 # Command Line Options
