@@ -1,0 +1,14 @@
+/node_modules
+/doc
+/testscripts*
+/.nyc_output
+
+## Git
+/.git
+/.gitignore
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
