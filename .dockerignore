@@ -2,10 +2,19 @@
 /doc
 /testscripts*
 /.nyc_output
+/test.js
+/Gulpfile.js
+/coverage
+/mockdate.js
+
 
 ## Git
 /.git
 /.gitignore
+
+## Docker
+Dockerfile
+/.dockerignore
 
 ## macOS
 .DS_Store
