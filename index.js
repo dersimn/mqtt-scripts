@@ -444,7 +444,7 @@ function runScript(script, name) {
          * @returns {mixed} the topics value
          */
         getValue: function Sandbox_getValue(topic) {
-            return status[topic] && status[topic].val;
+            return status[topic];
         }
     };
 
