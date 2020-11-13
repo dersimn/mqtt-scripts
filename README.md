@@ -74,8 +74,8 @@ Configure via `MQTTSCRIPTS_` env variables when using Docker Compose.
 
 Docker development build:
 
-    docker build -t dersimn/mqtt-scripts .
-    docker run --rm -v "$(pwd)/testscripts":/scripts dersimn/mqtt-scripts -v debug
+    docker build -t mqtt-scripts .
+    docker run --rm -v "$(pwd)/testscripts":/scripts mqtt-scripts -v debug
 
 Docker Hub deploy:
 
