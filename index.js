@@ -124,7 +124,7 @@ mqtt.on('message', (topic, payload, msg) => {
     }
 
     const oldState = status[topic];
-    oe.extend(status[topic], state);
+    oe.extend(status, {[topic]: state});
 
     subscriptions.forEach(subs => {
         const options = subs.options || {};
