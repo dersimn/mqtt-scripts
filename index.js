@@ -439,11 +439,11 @@ function runScript(script, name) {
             mqtt.publish(topic, payload, options);
         },
         /**
-         * @method getValue
+         * @method status
          * @param {string} topic
          * @returns {mixed} the topics value
          */
-        getValue: function Sandbox_getValue(topic) {
+        status: function Sandbox_getValue(topic) {
             return status[topic];
         }
     };
