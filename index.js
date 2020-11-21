@@ -355,11 +355,10 @@ function runScript(script, name) {
                         }
                     }
                 }
-            } else if (typeof topic === 'object' && topic.length > 0) {
-                topic = Array.prototype.slice.call(topic);
-                topic.forEach(tp => {
+            } else if (typeof topic === 'object' && Symbol.iterator in topic) {
+                for (const tp of topic) {
                     Sandbox.subscribe(tp, options, callback);
-                });
+                }
             }
         },
         /**
