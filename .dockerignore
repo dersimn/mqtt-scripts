@@ -1,10 +1,12 @@
-/node_modules
+node_modules
+package-lock.json
+
 /doc
+/scripts*
 /testscripts*
 /.nyc_output
 /test.js
 /Gulpfile.js
-/coverage
 /mockdate.js
 /.npmignore
 
