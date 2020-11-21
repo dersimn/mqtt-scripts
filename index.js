@@ -254,9 +254,17 @@ function runScript(script, name) {
              * @param {...*}
              */
             debug() {
-                const args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                log.debug.apply(log, args);
+                if (typeof arguments[0] == 'string') {
+                    // Preserves behaiviour in case of printf-like strings: "count: %d - yeah!"
+                    arguments[0] = name + ': ' + arguments[0];
+                    log.debug.apply(log, arguments);
+                } else {
+                    // Takes care of any other case
+                    // https://gist.github.com/robatron/5681424
+                    var args = Array.prototype.slice.call(arguments);
+                    args.unshift(name);
+                    log.debug.apply(log, args);
+                }
             },
             /**
              * Log an info message
@@ -265,9 +273,17 @@ function runScript(script, name) {
              * @param {...*}
              */
             info() {
-                const args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                log.info.apply(log, args);
+                if (typeof arguments[0] == 'string') {
+                    // Preserves behaiviour in case of printf-like strings: "count: %d - yeah!"
+                    arguments[0] = name + ': ' + arguments[0];
+                    log.info.apply(log, arguments);
+                } else {
+                    // Takes care of any other case
+                    // https://gist.github.com/robatron/5681424
+                    var args = Array.prototype.slice.call(arguments);
+                    args.unshift(name);
+                    log.info.apply(log, args);
+                }
             },
             /**
              * Log a warning message
@@ -276,9 +292,17 @@ function runScript(script, name) {
              * @param {...*}
              */
             warn() {
-                const args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                log.warn.apply(log, args);
+                if (typeof arguments[0] == 'string') {
+                    // Preserves behaiviour in case of printf-like strings: "count: %d - yeah!"
+                    arguments[0] = name + ': ' + arguments[0];
+                    log.warn.apply(log, arguments);
+                } else {
+                    // Takes care of any other case
+                    // https://gist.github.com/robatron/5681424
+                    var args = Array.prototype.slice.call(arguments);
+                    args.unshift(name);
+                    log.warn.apply(log, args);
+                }
             },
             /**
              * Log an error message
@@ -287,9 +311,17 @@ function runScript(script, name) {
              * @param {...*}
              */
             error() {
-                const args = Array.prototype.slice.call(arguments);
-                args.unshift(name + ':');
-                log.error.apply(log, args);
+                if (typeof arguments[0] == 'string') {
+                    // Preserves behaiviour in case of printf-like strings: "count: %d - yeah!"
+                    arguments[0] = name + ': ' + arguments[0];
+                    log.error.apply(log, arguments);
+                } else {
+                    // Takes care of any other case
+                    // https://gist.github.com/robatron/5681424
+                    var args = Array.prototype.slice.call(arguments);
+                    args.unshift(name);
+                    log.error.apply(log, args);
+                }
             }
         },
         /**
