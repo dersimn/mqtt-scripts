@@ -41,6 +41,7 @@ const config = require('yargs')
     .help('help')
     .argv;
 const mqttWildcard = require('mqtt-wildcard');
+const oe = require('obj-ease');
 
 /* istanbul ignore next */
 log.setLevel(['debug', 'info', 'warn', 'error'].indexOf(config.verbosity) === -1 ? 'info' : config.verbosity);
@@ -123,7 +124,7 @@ mqtt.on('message', (topic, payload, msg) => {
     }
 
     const oldState = status[topic];
-    status[topic] = state;
+    oe.extend(status[topic], state);
 
     subscriptions.forEach(subs => {
         const options = subs.options || {};
